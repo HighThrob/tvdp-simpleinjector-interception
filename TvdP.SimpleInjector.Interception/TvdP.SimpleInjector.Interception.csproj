@@ -4,12 +4,30 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>TvdP.SimpleInjector.Interception</AssemblyName>
     <RootNamespace>TvdP.SimpleInjector</RootNamespace>
+    <Version>0.9.0</Version>
+    <Authors>TvdP</Authors>
+    <Company />
+    <Product />
+    <Description>Interception extensions for SimpleInjector</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/HighThrob/tvdp-simpleinjector-interception</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/HighThrob/tvdp-simpleinjector-interception.git</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>SimpleInjector interception AOP</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.0.0" />
     <PackageReference Include="SimpleInjector" Version="5.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
