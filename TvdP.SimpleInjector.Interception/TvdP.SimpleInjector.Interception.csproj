@@ -4,7 +4,7 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>TvdP.SimpleInjector.Interception</AssemblyName>
     <RootNamespace>TvdP.SimpleInjector</RootNamespace>
-    <Version>0.9.0</Version>
+    <Version>0.9.1</Version>
     <Authors>TvdP</Authors>
     <Company />
     <Product />
