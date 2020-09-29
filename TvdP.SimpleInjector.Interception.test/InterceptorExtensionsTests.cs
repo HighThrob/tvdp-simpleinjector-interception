@@ -3,6 +3,8 @@ using SimpleInjector;
 using Castle.DynamicProxy;
 using Xunit;
 using System.Reflection;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace TvdP.SimpleInjector
 {
@@ -47,7 +49,6 @@ namespace TvdP.SimpleInjector
             public void Intercept(IInvocation invocation) =>
                 (InterceptMock ?? (ivc => ivc.Proceed())).Invoke(invocation);
         }
-
 
         void InterceptWithX_registers_interceptor_for_service(Action<Container,Action> interceptorRegistration)
         {
@@ -322,6 +323,58 @@ namespace TvdP.SimpleInjector
             service.DoSomething();
 
             Assert.True(interceptorWasCalled);
+        }
+
+        static (Action<Container>, string)[] ArgumentNullCausingList = 
+            new (Action<Container>,string)[]
+            {
+                (c => ((Container)null).InterceptWith<IInterceptor>(_ => true), "container"),
+                (c => c.InterceptWith<IInterceptor>(null), "predicate"),
+
+                (c => ((Container)null).InterceptWith(() => null, _ => true), "container"),
+                (c => c.InterceptWith( (Func<IInterceptor>)null, _ => true), "interceptorFactory"),
+                (c => c.InterceptWith(() => null, null), "predicate"),
+
+                (c => ((Container)null).InterceptWith(_ => null, _ => true), "container"),
+                (c => c.InterceptWith( (Func<ExpressionBuiltEventArgs, IInterceptor>)null, _ => true), "interceptorFactory"),
+                (c => c.InterceptWith(_ => null, null), "predicate"),
+
+                (c => ((Container)null).InterceptWith(new Interceptor(), _ => true), "container"),
+                (c => c.InterceptWith( (IInterceptor)null, _ => true), "interceptor"),
+                (c => c.InterceptWith(new Interceptor(), null), "predicate"),
+
+                (c => ((Container)null).InterceptionProxyWithOptions(o => o, _ => true), "container"),
+                (c => c.InterceptionProxyWithOptions(null, _ => true), "optionsModifier"),
+                (c => c.InterceptionProxyWithOptions(o => o, null), "predicate"),
+
+                (c => ((Lifestyle)null).CreateRegistrationForFake(typeof(IService), c), "lifestyle"),
+                (c => Lifestyle.Singleton.CreateRegistrationForFake(null, c), "serviceType"),
+                (c => Lifestyle.Singleton.CreateRegistrationForFake(typeof(IService),null), "container"),
+
+                (c => ((Container)null).RegisterFake(typeof(IService), Lifestyle.Singleton), "container"),
+                (c => c.RegisterFake(null, Lifestyle.Singleton), "serviceType"),
+                (c => c.RegisterFake(typeof(IService), null), "lifestyle"),
+
+                (c => ((Container)null).RegisterFake(typeof(IService)), "container"),
+                (c => c.RegisterFake(null), "serviceType"),
+
+                (c => ((Container)null).RegisterFake<IService>(Lifestyle.Singleton), "container"),
+                (c => c.RegisterFake<IService>(null), "lifestyle"),
+
+                (c => ((Container)null).RegisterFake<IService>(), "container"),
+            };
+
+        public static IEnumerable<object[]> GenerateArgumentNullExceptionCausingActions()
+        {
+            foreach((var nullCausingExpression, var parameterName) in ArgumentNullCausingList)
+                yield return new object[] { nullCausingExpression, parameterName };
+        }
+
+        [Theory]
+        [MemberData(nameof(GenerateArgumentNullExceptionCausingActions))]
+        public void Expected_ArgumentNullException_in_logical_places(Action<Container> exceptionCausingAction, string parameterName)
+        {
+            Assert.Throws<ArgumentNullException>(parameterName, () => exceptionCausingAction(new Container()));
         }
     }
 }
