@@ -173,7 +173,7 @@ namespace TvdP.SimpleInjector
 
         class ProxyInfo
         {
-            public (Expression expression, int order)[] interceptorExpressions { get; set; }
+            public Tuple<Expression,int>[] interceptorExpressions { get; set; }
             public ProxyGenerationOptions ProxyOptions { get; set; }
             public Expression targetExpression { get; set; }
         }
@@ -231,9 +231,9 @@ namespace TvdP.SimpleInjector
                     e,
                     proxyInfo =>
                         proxyInfo.interceptorExpressions =
-                            new[] { (expression: this.BuildInterceptorExpression(e), order: Order) }
+                            new[] { Tuple.Create(this.BuildInterceptorExpression(e),Order) }
                                 .Concat(proxyInfo.interceptorExpressions)
-                                .OrderBy(t => t.order)
+                                .OrderBy(t => t.Item2)
                                 .ToArray()
                 );
 
@@ -267,7 +267,7 @@ namespace TvdP.SimpleInjector
                     exp => 
                         new ProxyInfo { 
                             targetExpression = exp, 
-                            interceptorExpressions = new (Expression, int)[0] 
+                            interceptorExpressions = new Tuple<Expression, int>[0] 
                         }
                 );
 
@@ -280,14 +280,14 @@ namespace TvdP.SimpleInjector
                     Expression.Call(NonGenericInterceptorCreateProxyMethod,
                         Expression.Constant(e.RegisteredServiceType, typeof(Type)),
                         Expression.Constant(proxyInfo.ProxyOptions, typeof(ProxyGenerationOptions)),
-                        Expression.NewArrayInit(typeof(IInterceptor), proxyInfo.interceptorExpressions.Select(t => t.expression)),
+                        Expression.NewArrayInit(typeof(IInterceptor), proxyInfo.interceptorExpressions.Select(t => t.Item1)),
                         proxyInfo.targetExpression),
                     e.RegisteredServiceType);
 
             if (
                 proxyInfo.targetExpression is ConstantExpression 
                 && proxyInfo.interceptorExpressions.Length == 1 
-                && proxyInfo.interceptorExpressions[0].expression is ConstantExpression
+                && proxyInfo.interceptorExpressions[0].Item1 is ConstantExpression
             )
                 proxyExpression = Expression.Constant(CreateInstance(proxyExpression), e.RegisteredServiceType);
 
