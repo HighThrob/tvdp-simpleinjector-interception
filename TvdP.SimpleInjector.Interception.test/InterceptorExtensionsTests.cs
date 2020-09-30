@@ -276,6 +276,35 @@ namespace TvdP.SimpleInjector
             Assert.Null(dataObjectAttribute);
         }
 
+        [Fact]
+        public void InterceptWith_has_no_problem_with_200_interceptors_on_a_service()
+        {
+            var container = new Container();
+
+            int interceptorWasCalled = 0;
+
+            container.Register<IService>(() => new Service());
+
+            for(var i = 0; i < 200; ++i)
+                container.InterceptWith(
+                    new Interceptor(
+                        ivc =>
+                        {
+                            interceptorWasCalled += 1;
+                            ivc.Proceed();
+                        }
+                    ),
+                    type => type == typeof(IService)
+                );
+
+            container.Verify();
+
+            var service = container.GetInstance<IService>();
+            service.DoSomething();
+
+            Assert.Equal(200, interceptorWasCalled);
+        }
+
         void RegisterFakeX_registers_a_fake_implementation_of_a_service(Action<Container> register, Lifestyle expectedLifestyle)
         {
             var container = new Container();
